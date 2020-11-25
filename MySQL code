@@ -1,0 +1,54 @@
+Create table COMPANY 
+   (Cname varchar(25),Location varchar(25), PRIMARY KEY (Dname), (Cname));
+   
+Create table DEPARTMENT
+   (Dname varchar(25), Number int, Cn varchar(25),PRIMARY KEY(Dname), FOREIGN KEY(Cn) References
+     company (Cname));
+     
+Create table EMPLOYEE 
+   (EmployeeID int unsigned check (len(EmployeeID)=6, Fname
+   varchar(25),Minit char(1),Lname varchar (25),Con varchar(25), Den varchar(25)
+   PRIMARY KEY(EmployeeID),
+   FOREIGN KEY (Den) References DEPARTMENT (Dname));
+   
+Create table PERFORMANCE //UpdatedPayrollRoster
+  int, SpeedTests int, EID int, PRIMARY KEY (EID)
+  Refrences EMPLOYEE(EmployeeID));
+  
+Create table SALARY
+    (EID int unsigned check (len(EmployeeID)=6,baseSalary int, bonus
+    int, PRIMARY KEY(EID, baseSalary), FOREIGN KEY (EID) References EMPLOYEE (EmployeeID));
+    
+Create table LEAVE (leaveID int unsigned check (len(leaveID)=5, leavePay int, fromDate date, toDate date, EID int unsigned check
+    (len(EmployeeID)=6, 
+    PRIMARY KEY (leaveID, FOREIGN KEY (EID) Refrences EMPLOYEE(EmployeeID));
+    
+Create table TAX 
+    (StateTax decimal (1,2), FederalTax decimal (1,2), PRIMARY KEY (StateTax decimal (1,2), FederalTax decimal(1,2), PRIMARY KEY (StateTax));
+  
+Create table BENEFITS 
+    (EID int unsigned check (len(EmployeeID)=6, 
+    Retirement int  
+    insurance int
+   PRIMARY KEY (Retirement), 
+   FOREIGN KEY (EID) References EMPLOYEE (EmployeeID));
+   
+Create table ATTENDANCE 
+    (EID int, Absenses int, Tardiness int, PRIMARY KEY (EID, Absences, Tardiness),
+    FOREIGN KEY (EID) References EMPLOYEE(EmployeeID));
+    
+Create table DEDUCTIONS 
+    (total int, Pays int, StateT decimal(1,2), Ret int, Absen int, 
+    PRIMARY KEY (Total),
+    FOREIGN KEY (Pays) References PAYOUT (Paystub), 
+    FOREIGN KEY (StateT) References TAX(StateTax), 
+    FOREIGN KEY(Ret) References BENEFTS (Retirement), 
+    FOREIGN KEY (Absen) References ATTENDANCE (Absences));
+    
+Create table PAYMENTS 
+    (Total int, Pays int, baseSal int, IPay int, PRIMARY KEY (Total),
+    FOREIGN KEY (Pays) References PAYOUT (Pasystub), FOREIGN KEY (baseSal int, IPay int, PRIMARY KEY (Total),
+    FOREIGN KEY (Pays) References PAYOUT (Pasystub), 
+    FOREIGN KEY (baseSal) References SALARY (baseSalary), 
+    FOREIGN KEY (IPay) References LEAVE (leavePay));
+   
