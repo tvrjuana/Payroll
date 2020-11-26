@@ -1,0 +1,152 @@
+CREATE TABLE `payroll`.`company` (
+  `Company_ID` INT NOT NULL AUTO_INCREMENT,
+  `Cname` VARCHAR(45) NOT NULL,
+  `Location` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Company_ID`)
+  UNIQUE INDEX `Department_ID_UNIQUE` (`Department_ID` ASC) VISIBLE);
+
+CREATE TABLE `payroll`.`department` (
+  `Department_ID` INT NOT NULL AUTO_INCREMENT,
+  `Dname` VARCHAR(45) NOT NULL,
+  `Dnumber` VARCHAR(45) NOT NULL,
+  `CID` INT NOT NULL,
+  PRIMARY KEY (`Department_ID`),
+  UNIQUE INDEX `Department_ID_UNIQUE` (`Department_ID` ASC) VISIBLE
+  INDEX `CID_idx` (`CID` ASC) VISIBLE,
+  CONSTRAINT `CID`
+    FOREIGN KEY (`CID`)
+    REFERENCES `payroll`.`company` (`Company_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`employee` (
+  `EmployeeID` INT(6) UNSIGNED NOT NULL,
+  `Fname` VARCHAR(45) NOT NULL,
+  `Minit` VARCHAR(45) NULL,
+  `Lname` VARCHAR(45) NOT NULL,
+  `Company_ID` INT NULL,
+  `DID` INT NULL,
+  PRIMARY KEY (`EmployeeID`),
+  UNIQUE INDEX `EmployeeID_UNIQUE` (`EmployeeID` ASC) VISIBLE,
+  INDEX `CID_idx` (`Company_ID` ASC) VISIBLE,
+  INDEX `DID_idx` (`DID` ASC) VISIBLE,
+  CONSTRAINT `Company_ID`
+    FOREIGN KEY (`Company_ID`)
+    REFERENCES `payroll`.`company` (`Company_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `DID`
+    FOREIGN KEY (`DID`)
+    REFERENCES `payroll`.`department` (`Department_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`performance` (
+  `Employee_ID` INT(6) UNSIGNED NOT NULL,
+  `SpeedTest` TIME NOT NULL,
+  PRIMARY KEY (`Employee_ID`),
+  CONSTRAINT `Employee_ID`
+    FOREIGN KEY (`Employee_ID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`payout` (
+  `EID` INT(6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`EID`),
+  CONSTRAINT `EID`
+    FOREIGN KEY (`EID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`salary` (
+  `baseSalary` INT NOT NULL,
+  `Bonus` INT NULL,
+  `EmpID` INT(6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`baseSalary`, `EmpID`),
+  INDEX `EmpID_idx` (`EmpID` ASC) VISIBLE,
+  CONSTRAINT `EmpID`
+    FOREIGN KEY (`EmpID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`leave` (
+  `leaveID` INT(5) UNSIGNED NOT NULL,
+  `leavePay` INT NOT NULL,
+  `fromDate` DATE NOT NULL,
+  `toDate` DATE NOT NULL,
+  `Em_ID` INT(6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`leaveID`),
+  UNIQUE INDEX `leaveID_UNIQUE` (`leaveID` ASC) VISIBLE,
+  INDEX `Em_ID_idx` (`Em_ID` ASC) VISIBLE,
+  CONSTRAINT `Em_ID`
+    FOREIGN KEY (`Em_ID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`tax` (
+  `StateTax` DECIMAL(5,2) NOT NULL,
+  `FederalTax` DECIMAL(5,2) NOT NULL,
+  `CoID` INT NOT NULL,
+  PRIMARY KEY (`StateTax`, `CoID`),
+  INDEX `CoID_idx` (`CoID` ASC) VISIBLE,
+  CONSTRAINT `CoID`
+    FOREIGN KEY (`CoID`)
+    REFERENCES `payroll`.`company` (`Company_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`attendance` (
+  `Absences` INT NOT NULL,
+  `Tardies` INT NULL,
+  `EmID` INT(6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`Absences`, `EmID`),
+  INDEX `EmID_idx` (`EmID` ASC) VISIBLE,
+  CONSTRAINT `EmID`
+    FOREIGN KEY (`EmID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`benefits` (
+  `Retirement` INT NOT NULL,
+  `Insurance` INT NULL,
+  `EmployID` INT(6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`Retirement`, `EmployID`),
+  INDEX `EmpID_idx` (`EmployID` ASC) VISIBLE,
+  CONSTRAINT `EmployID`
+    FOREIGN KEY (`EmployID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+USE `payroll`;
+CREATE  OR REPLACE VIEW `v_computedPayments` AS
+SELECT
+baseSalary, 
+Bonus, 
+leavePay,
+(baseSalary+bonus+leavePay) as Payments_total
+FROM salary, leaveP;
+
+USE `payroll`;
+CREATE  OR REPLACE VIEW `v_computeddeductions` AS
+SELECT
+StateTax, 
+FederalTax, 
+Absences, 
+Retirement, 
+Insurance,
+(StateTax+FederalTax+Absences+Retirement+Insurance) as Deductions_total
+FROM tax, attendance, benefits;
+
+USE `payroll`;
+CREATE  OR REPLACE VIEW `v_payout` AS
+SELECT
+Payments_total,
+Deductions_total,
+(Payments_total - Deductions_total) as Payout
+FROM v_computedpayments, v_computeddeductions;
