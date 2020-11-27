@@ -8,7 +8,6 @@ CREATE TABLE `payroll`.`company` (
 CREATE TABLE `payroll`.`department` (
   `Department_ID` INT NOT NULL AUTO_INCREMENT,
   `Dname` VARCHAR(45) NOT NULL,
-  `Dnumber` VARCHAR(45) NOT NULL,
   `CID` INT NOT NULL,
   PRIMARY KEY (`Department_ID`),
   UNIQUE INDEX `Department_ID_UNIQUE` (`Department_ID` ASC) VISIBLE
