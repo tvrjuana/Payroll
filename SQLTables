@@ -23,8 +23,8 @@ CREATE TABLE `payroll`.`employee` (
   `Fname` VARCHAR(45) NOT NULL,
   `Minit` VARCHAR(45) NULL,
   `Lname` VARCHAR(45) NOT NULL,
-  `Company_ID` INT NULL,
-  `DID` INT NULL,
+  `Company_ID` INT NOT NULL,
+  `DID` INT NOT NULL,
   PRIMARY KEY (`EmployeeID`),
   UNIQUE INDEX `EmployeeID_UNIQUE` (`EmployeeID` ASC) VISIBLE,
   INDEX `CID_idx` (`Company_ID` ASC) VISIBLE,
@@ -43,7 +43,7 @@ CREATE TABLE `payroll`.`employee` (
 CREATE TABLE `payroll`.`performance` (
   `Employee_ID` INT(6) UNSIGNED NOT NULL,
   `SpeedTest` TIME NOT NULL,
-  PRIMARY KEY (`Employee_ID`),
+  PRIMARY KEY (`Employee_ID`, `SpeedTest`),
   CONSTRAINT `Employee_ID`
     FOREIGN KEY (`Employee_ID`)
     REFERENCES `payroll`.`employee` (`EmployeeID`)
@@ -71,13 +71,13 @@ CREATE TABLE `payroll`.`salary` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
-CREATE TABLE `payroll`.`leave` (
+CREATE TABLE `payroll`.`leavep` (
   `leaveID` INT(5) UNSIGNED NOT NULL,
   `leavePay` INT NOT NULL,
   `fromDate` DATE NOT NULL,
   `toDate` DATE NOT NULL,
   `Em_ID` INT(6) UNSIGNED NOT NULL,
-  PRIMARY KEY (`leaveID`),
+  PRIMARY KEY (`leaveID`, `Em_ID`),
   UNIQUE INDEX `leaveID_UNIQUE` (`leaveID` ASC) VISIBLE,
   INDEX `Em_ID_idx` (`Em_ID` ASC) VISIBLE,
   CONSTRAINT `Em_ID`
@@ -134,12 +134,12 @@ FROM salary, leaveP;
 USE `payroll`;
 CREATE  OR REPLACE VIEW `v_computeddeductions` AS
 SELECT
-StateTax, 
-FederalTax, 
-Absences, 
+StateTax,
+FederalTax,
+Absences,
 Retirement, 
 Insurance,
-(StateTax+FederalTax+Absences+Retirement+Insurance) as Deductions_total
+(Absences+Retirement+Insurance) * (StateTax+FederalTax) + (Absences+Retirement+Insurance) as Deductions_total
 FROM tax, attendance, benefits;
 
 USE `payroll`;
