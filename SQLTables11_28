@@ -1,0 +1,179 @@
+CREATE TABLE `payroll`.`company` (
+  `Company_ID` INT NOT NULL AUTO_INCREMENT,
+  `Cname` VARCHAR(45) NOT NULL,
+  `Location` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Company_ID`)
+  UNIQUE INDEX `Department_ID_UNIQUE` (`Department_ID` ASC) VISIBLE);
+
+CREATE TABLE `payroll`.`department` (
+  `Department_ID` INT NOT NULL AUTO_INCREMENT,
+  `Dname` VARCHAR(45) NOT NULL,
+  `CID` INT NOT NULL,
+  PRIMARY KEY (`Department_ID`),
+  UNIQUE INDEX `Department_ID_UNIQUE` (`Department_ID` ASC) VISIBLE
+  INDEX `CID_idx` (`CID` ASC) VISIBLE,
+  CONSTRAINT `CID`
+    FOREIGN KEY (`CID`)
+    REFERENCES `payroll`.`company` (`Company_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`employee` (
+  `EmployeeID` INT(6) UNSIGNED NOT NULL,
+  `Fname` VARCHAR(45) NOT NULL,
+  `Minit` VARCHAR(45) NULL,
+  `Lname` VARCHAR(45) NOT NULL,
+  `Company_ID` INT NOT NULL,
+  `DID` INT NOT NULL,
+  PRIMARY KEY (`EmployeeID`),
+  UNIQUE INDEX `EmployeeID_UNIQUE` (`EmployeeID` ASC) VISIBLE,
+  INDEX `CID_idx` (`Company_ID` ASC) VISIBLE,
+  INDEX `DID_idx` (`DID` ASC) VISIBLE,
+  CONSTRAINT `Company_ID`
+    FOREIGN KEY (`Company_ID`)
+    REFERENCES `payroll`.`company` (`Company_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `DID`
+    FOREIGN KEY (`DID`)
+    REFERENCES `payroll`.`department` (`Department_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`performance` (
+  `Performance_ID` INT NOT NULL AUTO_INCREMENT,
+  `SpeedTests` TIME NULL,
+  `Employee_ID` INT (6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`Performance_ID`),
+  UNIQUE INDEX `Performance_ID_UNIQUE` (`Performance_ID` ASC) VISIBLE,
+  INDEX `Employee_ID_idx` (`Employee_ID` ASC) VISIBLE,
+  CONSTRAINT `Employee_ID`
+    FOREIGN KEY (`Employee_ID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`payout` (
+  `PaystubID` INT(3) NOT NULL,
+  `EID` INT (6) UNSIGNED NOT NULL,
+  PRIMARY KEY (`PaystubID`),
+  UNIQUE INDEX `PaystubID_UNIQUE` (`PaystubID` ASC) VISIBLE,
+  INDEX `EID_idx` (`EID` ASC) VISIBLE,
+  CONSTRAINT `EID`
+    FOREIGN KEY (`EID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`salary` (
+  `Salary_ID` INT NOT NULL AUTO_INCREMENT,
+  `baseSalary` INT NOT NULL,
+  `bonus` INT NULL,
+  `EmpID` INT(6) UNSIGNED NOT NULL,
+  `PID` INT(3) NOT NULL,
+  PRIMARY KEY (`Salary_ID`),
+  UNIQUE INDEX `Salary_ID_UNIQUE` (`Salary_ID` ASC) VISIBLE,
+  INDEX `EmpID_idx` (`EmpID` ASC) VISIBLE,
+  INDEX `PID_idx` (`PID` ASC) VISIBLE,
+  CONSTRAINT `EmpID`
+    FOREIGN KEY (`EmpID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `PID`
+    FOREIGN KEY (`PID`)
+    REFERENCES `payroll`.`payout` (`PaystubID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`leavep` (
+  `leaveID` INT(5) UNSIGNED NOT NULL,
+  `leavePay` INT NOT NULL,
+  `fromDate` DATE NOT NULL,
+  `toDate` DATE NOT NULL,
+  `Em_ID` INT(6) UNSIGNED NOT NULL,
+  `Ps_ID` INT(3) NOT NULL,
+  PRIMARY KEY (`leaveID`),
+  UNIQUE INDEX `leaveID_UNIQUE` (`leaveID` ASC) VISIBLE,
+  INDEX `Em_ID_idx` (`Em_ID` ASC) VISIBLE,
+  INDEX `Ps_ID_idx` (`Ps_ID` ASC) VISIBLE,
+  CONSTRAINT `Em_ID`
+    FOREIGN KEY (`Em_ID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Ps_ID`
+    FOREIGN KEY (`Ps_ID`)
+    REFERENCES `payroll`.`payout` (`PaystubID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`tax` (
+  `Tax_ID` INT NOT NULL AUTO_INCREMENT,
+  `StateTax` DECIMAL(5,2) NOT NULL,
+  `FederalTax` DECIMAL(5,2) NOT NULL,
+  `Co_ID` INT NOT NULL,
+  `E_ID` INT(6) UNSIGNED NOT NULL,
+  `P_ID` INT(3) NOT NULL,
+  PRIMARY KEY (`Tax_ID`),
+  UNIQUE INDEX `Tax_ID_UNIQUE` (`Tax_ID` ASC) VISIBLE,
+  INDEX `Co_ID_idx` (`Co_ID` ASC) VISIBLE,
+  INDEX `E_ID_idx` (`E_ID` ASC) VISIBLE,
+  INDEX `P_ID_idx` (`P_ID` ASC) VISIBLE,
+  CONSTRAINT `Co_ID`
+    FOREIGN KEY (`Co_ID`)
+    REFERENCES `payroll`.`company` (`Company_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `E_ID`
+    FOREIGN KEY (`E_ID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `P_ID`
+    FOREIGN KEY (`P_ID`)
+    REFERENCES `payroll`.`payout` (`PaystubID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`attendance` (
+  `Attendance_ID` INT NOT NULL AUTO_INCREMENT,
+  `Absences` INT NULL,
+  `Tardies` INT NULL,
+  `EmID` INT(6) UNSIGNED NOT NULL,
+  `PaID` INT(3) NOT NULL,
+  PRIMARY KEY (`Attendance_ID`),
+  UNIQUE INDEX `Attendance_ID_UNIQUE` (`Attendance_ID` ASC) VISIBLE,
+  INDEX `EmID_idx` (`EmID` ASC) VISIBLE,
+  INDEX `PaID_idx` (`PaID` ASC) VISIBLE,
+  CONSTRAINT `EmID`
+    FOREIGN KEY (`EmID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `PaID`
+    FOREIGN KEY (`PaID`)
+    REFERENCES `payroll`.`payout` (`PaystubID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `payroll`.`benefits` (
+  `Benefits_ID` INT NOT NULL AUTO_INCREMENT,
+  `Retirement` INT NULL,
+  `Insurance` INT NULL,
+  `EmployID` INT(6) UNSIGNED NOT NULL,
+  `Pay_ID` INT(3) NOT NULL,
+  PRIMARY KEY (`Benefits_ID`),
+  UNIQUE INDEX `Benefits_ID_UNIQUE` (`Benefits_ID` ASC) VISIBLE,
+  INDEX `EmployID_idx` (`EmployID` ASC) VISIBLE,
+  INDEX `Pay_ID_idx` (`Pay_ID` ASC) VISIBLE,
+  CONSTRAINT `EmployID`
+    FOREIGN KEY (`EmployID`)
+    REFERENCES `payroll`.`employee` (`EmployeeID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Pay_ID`
+    FOREIGN KEY (`Pay_ID`)
+    REFERENCES `payroll`.`payout` (`PaystubID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
